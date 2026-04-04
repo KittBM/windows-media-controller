@@ -1,0 +1,19 @@
+{
+  "name": "windows-media-controller-server",
+  "version": "1.0.0",
+  "description": "Server for controlling Windows media playback from Flutter app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "@coooookies/windows-smtc-monitor": "^1.0.12",
+    "bonjour-service": "^1.1.1",
+    "ip": "^1.1.8",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

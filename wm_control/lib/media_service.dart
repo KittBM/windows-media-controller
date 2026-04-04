@@ -53,6 +53,7 @@ class MediaControlHandler extends BaseAudioHandler with SeekHandler {
       album: _currentMediaState.album,
       title: _currentMediaState.title,
       artist: _currentMediaState.artist,
+      duration: _currentMediaState.duration,
       artUri: artUri,
     ));
 
@@ -69,6 +70,9 @@ class MediaControlHandler extends BaseAudioHandler with SeekHandler {
       },
       playing: _currentMediaState.status == PlaybackStatus.playing,
       processingState: AudioProcessingState.ready,
+      updatePosition: _currentMediaState.position,
+      bufferedPosition: _currentMediaState.position,
+      updateTime: _currentMediaState.lastUpdated,
     ));
   }
 

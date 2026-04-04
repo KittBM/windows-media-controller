@@ -14,6 +14,9 @@ class MediaState {
   final PlaybackStatus status;
   final Uint8List? thumbnail;
   final String appId;
+  final Duration position;
+  final Duration duration;
+  final DateTime lastUpdated;
 
   MediaState({
     required this.title,
@@ -22,6 +25,9 @@ class MediaState {
     required this.status,
     this.thumbnail,
     required this.appId,
+    required this.position,
+    required this.duration,
+    required this.lastUpdated,
   });
 
   factory MediaState.fromJson(Map<String, dynamic> json) {
@@ -35,6 +41,13 @@ class MediaState {
               ? base64Decode(json['thumbnail'])
               : null,
       appId: json['appId'] ?? '',
+      // Check if position and duration use the same units.
+      // Some cases suggest duration might be in seconds while position is in ms.
+      position: Duration(milliseconds: (json['position'] ?? 0).toInt()),
+      duration: Duration(milliseconds: (json['duration'] ?? 0).toInt()),
+      lastUpdated: json['lastUpdatedTime'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(json['lastUpdatedTime'])
+          : DateTime.now(),
     );
   }
 
@@ -55,5 +68,8 @@ class MediaState {
         album: '',
         status: PlaybackStatus.stopped,
         appId: '',
+        position: Duration.zero,
+        duration: Duration.zero,
+        lastUpdated: DateTime.now(),
       );
 }

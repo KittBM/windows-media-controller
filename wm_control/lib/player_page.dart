@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:nsd/nsd.dart';
 import 'package:provider/provider.dart';
+import 'package:audio_service/audio_service.dart';
 import 'media_model.dart';
 import 'media_service.dart';
 
@@ -121,7 +122,65 @@ class _PlayerPageState extends State<PlayerPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
+                // Progress Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Column(
+                    children: [
+                      StreamBuilder<Duration>(
+                        stream: AudioService.positionStream,
+                        builder: (context, positionSnapshot) {
+                          final position =
+                              positionSnapshot.data ?? state.position;
+                          final duration = state.duration;
+
+                          final positionMs = position.inMilliseconds.toDouble();
+                          final durationMs = duration.inMilliseconds.toDouble();
+                          final clampedMax = durationMs > 0 ? durationMs : 1.0;
+                          final clampedValue =
+                              positionMs.clamp(0.0, clampedMax);
+
+                          return Column(
+                            children: [
+                              Slider(
+                                value: clampedValue,
+                                min: 0,
+                                max: clampedMax,
+                                activeColor: Colors.white,
+                                inactiveColor: Colors.white24,
+                                onChanged: (value) {
+                                  // Optional: implement seek
+                                },
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      _formatDuration(position),
+                                      style: const TextStyle(
+                                          color: Colors.white70),
+                                    ),
+                                    Text(
+                                      _formatDuration(duration),
+                                      style: const TextStyle(
+                                          color: Colors.white70),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
                 // Controls
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -163,5 +222,12 @@ class _PlayerPageState extends State<PlayerPage> {
         },
       ),
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$minutes:$seconds";
   }
 }

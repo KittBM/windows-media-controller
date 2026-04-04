@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 enum PlaybackStatus {
-  Playing,
-  Paused,
-  Stopped,
+  playing,
+  paused,
+  stopped,
 }
 
 class MediaState {
@@ -30,9 +30,10 @@ class MediaState {
       artist: json['artist'] ?? '',
       album: json['album'] ?? '',
       status: _parseStatus(json['status']),
-      thumbnail: json['thumbnail'] != null && json['thumbnail'].toString().isNotEmpty
-          ? base64Decode(json['thumbnail'])
-          : null,
+      thumbnail:
+          json['thumbnail'] != null && json['thumbnail'].toString().isNotEmpty
+              ? base64Decode(json['thumbnail'])
+              : null,
       appId: json['appId'] ?? '',
     );
   }
@@ -40,11 +41,11 @@ class MediaState {
   static PlaybackStatus _parseStatus(String? status) {
     switch (status) {
       case 'Playing':
-        return PlaybackStatus.Playing;
+        return PlaybackStatus.playing;
       case 'Paused':
-        return PlaybackStatus.Paused;
+        return PlaybackStatus.paused;
       default:
-        return PlaybackStatus.Stopped;
+        return PlaybackStatus.stopped;
     }
   }
 
@@ -52,7 +53,7 @@ class MediaState {
         title: 'No Media',
         artist: '',
         album: '',
-        status: PlaybackStatus.Stopped,
+        status: PlaybackStatus.stopped,
         appId: '',
       );
 }

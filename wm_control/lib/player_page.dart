@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:nsd/nsd.dart';
 import 'package:provider/provider.dart';
@@ -20,9 +22,35 @@ class _PlayerPageState extends State<PlayerPage> {
   void initState() {
     super.initState();
     _handler = Provider.of<MediaControlHandler>(context, listen: false);
-    final url = 'ws://${widget.service.host}:${widget.service.port}';
-    print('Connecting to $url');
-    _handler.connect(url);
+    connectToPC();
+  }
+
+  Future<void> connectToPC() async {
+    var targetHost = widget.service.host ?? '';
+    var targetPort = widget.service.port ?? 8080;
+
+    if (widget.service.txt != null) {
+      if (widget.service.txt!.containsKey('ip') &&
+          widget.service.txt!['ip'] != null) {
+        targetHost = String.fromCharCodes(widget.service.txt!['ip']!);
+      }
+      if (widget.service.txt!.containsKey('port') &&
+          widget.service.txt!['port'] != null) {
+        targetPort =
+            int.tryParse(String.fromCharCodes(widget.service.txt!['port']!)) ??
+                targetPort;
+      }
+    }
+
+    final url = 'ws://$targetHost:$targetPort';
+    log('Connecting to $url');
+    await _handler.connect(url);
+  }
+
+  @override
+  void dispose() {
+    _handler.disconnect();
+    super.dispose();
   }
 
   @override
@@ -51,7 +79,7 @@ class _PlayerPageState extends State<PlayerPage> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -87,7 +115,8 @@ class _PlayerPageState extends State<PlayerPage> {
                         state.artist,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 18, color: Colors.white.withOpacity(0.7)),
+                            fontSize: 18,
+                            color: Colors.white.withValues(alpha: 0.7)),
                       ),
                     ],
                   ),
@@ -112,7 +141,7 @@ class _PlayerPageState extends State<PlayerPage> {
                       child: IconButton(
                         iconSize: 64,
                         icon: Icon(
-                          state.status == PlaybackStatus.Playing
+                          state.status == PlaybackStatus.playing
                               ? Icons.pause
                               : Icons.play_arrow,
                           color: Colors.black,

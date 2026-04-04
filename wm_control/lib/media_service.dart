@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
 import 'package:audio_service/audio_service.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'media_model.dart';
 
@@ -21,27 +24,42 @@ class MediaControlHandler extends BaseAudioHandler with SeekHandler {
         _updateAudioService();
       }
     }, onDone: () {
-      print('WebSocket closed');
+      log('WebSocket closed');
     }, onError: (e) {
-      print('WebSocket error: $e');
+      log('WebSocket error: $e');
     });
   }
 
-  void _updateAudioService() {
+  void disconnect() {
+    _channel?.sink.close();
+    _channel = null;
+  }
+
+  Future<void> _updateAudioService() async {
+    Uri? artUri;
+    if (_currentMediaState.thumbnail != null) {
+      try {
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/album_art.jpg');
+        await file.writeAsBytes(_currentMediaState.thumbnail!);
+        artUri = Uri.file(file.path);
+      } catch (e) {
+        log('Error saving album art: $e');
+      }
+    }
+
     mediaItem.add(MediaItem(
       id: _currentMediaState.appId,
       album: _currentMediaState.album,
       title: _currentMediaState.title,
       artist: _currentMediaState.artist,
-      artUri: _currentMediaState.thumbnail != null
-          ? Uri.dataFromBytes(_currentMediaState.thumbnail!)
-          : null,
+      artUri: artUri,
     ));
 
     playbackState.add(PlaybackState(
       controls: [
         MediaControl.skipToPrevious,
-        _currentMediaState.status == PlaybackStatus.Playing
+        _currentMediaState.status == PlaybackStatus.playing
             ? MediaControl.pause
             : MediaControl.play,
         MediaControl.skipToNext,
@@ -49,7 +67,7 @@ class MediaControlHandler extends BaseAudioHandler with SeekHandler {
       systemActions: const {
         MediaAction.seek,
       },
-      playing: _currentMediaState.status == PlaybackStatus.Playing,
+      playing: _currentMediaState.status == PlaybackStatus.playing,
       processingState: AudioProcessingState.ready,
     ));
   }
